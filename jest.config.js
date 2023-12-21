@@ -6,4 +6,7 @@ module.exports = {
     },
     testRegex: '(/tests/.*|(\\.|/)(test|spec))\\.ts?$',
     moduleFileExtensions: ['ts', 'js', 'json', 'node'],
-};
+    moduleNameMapper: {
+      '^mongoose$': '<rootDir>/__mocks__/mongoose.ts'
+    }
+  };

@@ -94,7 +94,7 @@ app.get('/contact/:id', async (req: Request, res: Response) => {
 
 const port = process.env.PORT || 8080;
 
-mongoose.connect("mongodb+srv://Nguesseu:vegetadbz@planetvegeta.pbw070j.mongodb.net/test").then(() => {
+mongoose.connect("mongodb://localhost:27017").then(() => {
     app.listen(port, () => {
         console.log(`App listening to port ${port}`);
     });
