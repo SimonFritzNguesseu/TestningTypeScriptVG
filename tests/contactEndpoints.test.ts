@@ -1,20 +1,17 @@
 import request from 'supertest';
-import app from '../server'; // Ensure the correct path to your server file
+import app from '../server';
 import mongoose from 'mongoose';
 import axios from 'axios';
 
-// Mock Axios before importing your models, as they might be used there
 jest.mock('axios');
 export const mockedAxios = axios as jest.Mocked<typeof axios>;
 
-// Create a function to return a manual mock for the ContactModel
 var mockContactModel = () => ({
   find: jest.fn(),
   findById: jest.fn(),
   save: jest.fn()
 });
 
-// Mock the mongoose model factory function
 jest.mock('mongoose', () => {
   const originalModule = jest.requireActual('mongoose');
   return {
@@ -22,11 +19,8 @@ jest.mock('mongoose', () => {
     ContactModel: jest.fn(() => mockContactModel)
   };
 });
-
-// POST /contact tests
 describe('POST /contact', () => {
   beforeEach(() => {
-    // Define or redefine the mock implementations here
     const model = mockContactModel();
     model.find.mockResolvedValue([
       {
@@ -34,9 +28,7 @@ describe('POST /contact', () => {
         firstname: 'John',
         lastname: 'Doe',
         email: 'john.doe@example.com',
-        // ... other properties
       },
-      // ... more mocked contacts
     ]);
     model.findById.mockImplementation((id: any) =>
       Promise.resolve(id === 'valid-contact-id' ? {
@@ -44,7 +36,6 @@ describe('POST /contact', () => {
         firstname: 'Jane',
         lastname: 'Doe',
         email: 'jane.doe@example.com',
-        // ... other properties
       } : null)
     );
     model.save.mockResolvedValue({
@@ -52,10 +43,8 @@ describe('POST /contact', () => {
       firstname: 'Test',
       lastname: 'User',
       email: 'test.user@example.com',
-      // ... other properties
     });
 
-    // Mock Axios for geocoding API
     mockedAxios.get.mockResolvedValue({ data: { lat: 59.3251172, lng: 18.0710935 } })
   });
 
@@ -84,8 +73,6 @@ describe('POST /contact', () => {
     expect(response.statusCode).toBe(400);
   });
 });
-
-// GET /contact/:id tests
 describe('GET /contact/:id', () => {
   it('should return a contact with coordinates and a 200 status', async () => {
     const response = await request(app).get('/contact/659be1c46f2eb67a28a5524e');

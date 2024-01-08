@@ -69,12 +69,9 @@ app.post('/contact', async (req: Request, res: Response) => {
             city,
             country,
         };
-
-        // Mock the save method of ContactModel
         const saveMock = jest.fn().mockResolvedValue(mockupContact);
         jest.spyOn(ContactModel.prototype, 'save').mockImplementation(saveMock);
 
-        // Process the request as if it's a real save, but use the mockupContact instead
         const savedContact = await saveMock();
 
         res.status(201).json(savedContact);
@@ -102,11 +99,9 @@ app.get('/contact/:id', async (req: Request, res: Response) => {
         }
 
         const address = encodeURIComponent(`${contact.address}, ${contact.city}, ${contact.country}`);
-       // Assuming you already have the mockedAxios in your server.ts file
 const coordinatesAPI = await mockedAxios.get(`https://api-ninjas.com/api/geocoding?address=${address}`);
 
 
-        // Check if coordinates are successfully retrieved
         if (coordinatesAPI.data && coordinatesAPI.data.lat && coordinatesAPI.data.lng) {
             contact.lat = coordinatesAPI.data.lat;
             contact.lng = coordinatesAPI.data.lng;
@@ -117,7 +112,6 @@ const coordinatesAPI = await mockedAxios.get(`https://api-ninjas.com/api/geocodi
         res.status(200).json(contact);
     } catch (error: any) {
         if (error.kind && error.kind === 'ObjectId') {
-            // Handle invalid ObjectId (e.g., invalid format)
             return res.status(404).json({ error: 'Invalid contact ID' });
         }
         res.status(500).json({ error: error.message });
