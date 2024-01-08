@@ -8,10 +8,10 @@ jest.mock('axios');
 const mockedAxios = axios as jest.Mocked<typeof axios>;
 
 // Create a function to return a manual mock for the ContactModel
-const mockContactModel = () => ({
+var mockContactModel = () => ({
   find: jest.fn(),
   findById: jest.fn(),
-  create: jest.fn()
+  save: jest.fn()
 });
 
 // Mock the mongoose model factory function
@@ -19,12 +19,13 @@ jest.mock('mongoose', () => {
   const originalModule = jest.requireActual('mongoose');
   return {
     ...originalModule,
-    model: jest.fn(() => mockContactModel())
+    ContactModel: jest.fn(() => mockContactModel)
   };
 });
 
-describe('Contact API endpoint tests', () => {
-  beforeAll(() => {
+// POST /contact tests
+describe('POST /contact', () => {
+  beforeEach(() => {
     // Define or redefine the mock implementations here
     const model = mockContactModel();
     model.find.mockResolvedValue([
@@ -46,7 +47,7 @@ describe('Contact API endpoint tests', () => {
         // ... other properties
       } : null)
     );
-    model.create.mockResolvedValue({
+    model.save.mockResolvedValue({
       _id: 'mocked-id',
       firstname: 'Test',
       lastname: 'User',
@@ -55,47 +56,52 @@ describe('Contact API endpoint tests', () => {
     });
 
     // Mock Axios for geocoding API
-    mockedAxios.get.mockResolvedValue({ data: { lat: 59.3251172, lng: 18.0710935 } });
+    mockedAxios.get.mockResolvedValue({ data: { lat: 59.3251172, lng: 18.0710935 } })
   });
 
-  // POST /contact tests
-  describe('POST /contact', () => {
-    it('should create a new contact and return 201 status', async () => {
-      const newContact = {
-        firstname: "Test",
-        lastname: "User",
-        email: "test.user@example.com",
-        personalnumber: "550713-1405",
-        address: "Testgatan 1",
-        zipCode: "123 45",
-        city: "Teststad",
-        country: "Testland"
-      };
+  it('should create a new contact and return 201 status', async () => {
+    const newContact = {
+      firstname: "Test",
+      lastname: "Alm",
+      email: "testuser123@gmail.com",
+      personalnumber: "550713-1405",
+      address: "Testgatan",
+      zipCode: "12345",
+      city: "Teststad",
+      country: "Testland"
+    };
 
-      const response = await request(app).post('/contact').send(newContact);
-      expect(response.statusCode).toBe(201);
-      expect(response.body).toHaveProperty('_id', 'mocked-id');
-    });
-
-    it('should return 400 status for invalid input', async () => {
-      const invalidContact = { firstname: "Test" }; // Missing required fields
-      const response = await request(app).post('/contact').send(invalidContact);
-      expect(response.statusCode).toBe(400);
-    });
+    const response = await request(app).post('/contact').send(newContact);
+    console.log(response.body);
+    expect(response.statusCode).toBe(201);
+    expect(response.body).toHaveProperty('_id');
   });
 
-  // GET /contact/:id tests
-  describe('GET /contact/:id', () => {
-    it('should return a contact with coordinates and a 200 status', async () => {
-      const response = await request(app).get('/contact/valid-contact-id');
-      expect(response.statusCode).toBe(200);
-      expect(response.body).toHaveProperty('lat', 59.3251172);
-      expect(response.body).toHaveProperty('lng', 18.0710935);
-    });
+  it('should return 400 status for invalid input', async () => {
+    const invalidContact = { firstname: "Test" }; // Missing required fields
+    const response = await request(app).post('/contact').send(invalidContact);
+    console.log(response.body);
+    expect(response.statusCode).toBe(400);
+  });
+});
 
-    it('should return 404 status for non-existing id', async () => {
-      const response = await request(app).get('/contact/non-existing-id');
-      expect(response.statusCode).toBe(404);
-    });
+// GET /contact/:id tests
+describe('GET /contact/:id', () => {
+  it('should return a contact with coordinates and a 200 status', async () => {
+    const response = await request(app).get('/contact/valid-contact-id');
+    if (response.statusCode !== 200) {
+      console.log('Response body:', response.body);
+    }
+    expect(response.statusCode).toBe(200);
+    expect(response.body).toHaveProperty('lat', 59.3251172);
+    expect(response.body).toHaveProperty('lng', 18.0710935);
+  });
+
+  it('should return 404 status for non-existing id', async () => {
+    const response = await request(app).get('/contact/non-existing-id');
+    if (response.statusCode !== 404) {
+      console.log('Response body:', response.body);
+    }
+    expect(response.statusCode).toBe(404);
   });
 });

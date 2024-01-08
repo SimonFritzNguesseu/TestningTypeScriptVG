@@ -78,16 +78,26 @@ app.get('/contact/:id', async (req: Request, res: Response) => {
         const contact = await ContactModel.findById(req.params.id);
 
         if (!contact) {
-            return res.status(404).send();
+            return res.status(404).json({ error: 'Contact not found' });
         }
 
         const address = encodeURIComponent(`${contact.address}, ${contact.city}, ${contact.country}`);
         const coordinatesAPI = await axios.get(`https://api-ninjas.com/api/geocoding?address=${address}`);
-        contact.lat = coordinatesAPI.data.lat;
-        contact.lng = coordinatesAPI.data.lng;
+
+        // Check if coordinates are successfully retrieved
+        if (coordinatesAPI.data && coordinatesAPI.data.lat && coordinatesAPI.data.lng) {
+            contact.lat = coordinatesAPI.data.lat;
+            contact.lng = coordinatesAPI.data.lng;
+        } else {
+            return res.status(500).json({ error: 'Failed to retrieve coordinates' });
+        }
 
         res.status(200).json(contact);
     } catch (error: any) {
+        if (error.kind && error.kind === 'ObjectId') {
+            // Handle invalid ObjectId (e.g., invalid format)
+            return res.status(404).json({ error: 'Invalid contact ID' });
+        }
         res.status(500).json({ error: error.message });
     }
 });
