@@ -5,7 +5,7 @@ import axios from 'axios';
 
 // Mock Axios before importing your models, as they might be used there
 jest.mock('axios');
-const mockedAxios = axios as jest.Mocked<typeof axios>;
+export const mockedAxios = axios as jest.Mocked<typeof axios>;
 
 // Create a function to return a manual mock for the ContactModel
 var mockContactModel = () => ({
@@ -88,7 +88,7 @@ describe('POST /contact', () => {
 // GET /contact/:id tests
 describe('GET /contact/:id', () => {
   it('should return a contact with coordinates and a 200 status', async () => {
-    const response = await request(app).get('/contact/valid-contact-id');
+    const response = await request(app).get('/contact/659be1c46f2eb67a28a5524e');
     if (response.statusCode !== 200) {
       console.log('Response body:', response.body);
     }

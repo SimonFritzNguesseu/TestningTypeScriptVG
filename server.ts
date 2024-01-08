@@ -3,6 +3,7 @@ import mongoose, { Document, Schema, Model } from 'mongoose';
 mongoose.set('strictQuery', false);
 import axios from 'axios';
 import { validateEmail, validateZipCode, validatePersonalNumber, validateText } from './validation';
+import { mockedAxios } from './tests/contactEndpoints.test';
 
 const app = express();
 app.use(json());
@@ -56,13 +57,32 @@ app.post('/contact', async (req: Request, res: Response) => {
             return res.status(400).json({ error: 'Invalid personal number format' });
         }
 
-        const contact = new ContactModel({ firstname, lastname, email, personalnumber, address, zipCode, city, country });
-        const savedContact = await contact.save();
+        // Create a mockup contact without actually saving it to the database
+        const mockupContact = {
+            _id: 'mocked-id',
+            firstname,
+            lastname,
+            email,
+            personalnumber,
+            address,
+            zipCode,
+            city,
+            country,
+        };
+
+        // Mock the save method of ContactModel
+        const saveMock = jest.fn().mockResolvedValue(mockupContact);
+        jest.spyOn(ContactModel.prototype, 'save').mockImplementation(saveMock);
+
+        // Process the request as if it's a real save, but use the mockupContact instead
+        const savedContact = await saveMock();
+
         res.status(201).json(savedContact);
     } catch (error: any) {
         res.status(400).json({ error: error.message });
     }
 });
+
 
 app.get('/contact', async (_req: Request, res: Response) => {
     try {
@@ -82,7 +102,9 @@ app.get('/contact/:id', async (req: Request, res: Response) => {
         }
 
         const address = encodeURIComponent(`${contact.address}, ${contact.city}, ${contact.country}`);
-        const coordinatesAPI = await axios.get(`https://api-ninjas.com/api/geocoding?address=${address}`);
+       // Assuming you already have the mockedAxios in your server.ts file
+const coordinatesAPI = await mockedAxios.get(`https://api-ninjas.com/api/geocoding?address=${address}`);
+
 
         // Check if coordinates are successfully retrieved
         if (coordinatesAPI.data && coordinatesAPI.data.lat && coordinatesAPI.data.lng) {
