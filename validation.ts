@@ -10,7 +10,6 @@ export function validateZipCode(zipCode: string): boolean {
 }
 
 export function validatePersonalNumber(personalNumber: string): boolean {
-    // Updated regex to match the pattern 123456-7890
     const personalNumberRegex = /^\d{6}-\d{4}$/;
     return personalNumberRegex.test(personalNumber);
 }

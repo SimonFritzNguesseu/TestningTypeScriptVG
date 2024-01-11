@@ -87,15 +87,8 @@ app.get('/contact/:id', async (req: Request, res: Response) => {
 
         const address = encodeURIComponent(`${contact.address}, ${contact.city}, ${contact.country}`);
         console.log('Address:', address);
-        nock("https://api-ninjas.com")
-            .get("/api/geocoding")
-            .query({ address })  // Make sure to use the actual query parameters
-            .reply(200, { lat: 0, lng: 0 }); // Modify the response as per your needs
-
-        // Replace the real API call with the mocked response
         const coordinatesAPI = await axios.get(`https://api-ninjas.com/api/geocoding?address=${address}`);
 
-        // Use the mocked response for testing
         if (coordinatesAPI.data && coordinatesAPI.data.lat && coordinatesAPI.data.lng) {
             contact.lat = coordinatesAPI.data.lat;
             contact.lng = coordinatesAPI.data.lng;
@@ -103,7 +96,6 @@ app.get('/contact/:id', async (req: Request, res: Response) => {
             return res.status(500).json({ error: 'Failed to retrieve coordinates' });
         }
 
-        // Log the coordinates and the entire contact object
         console.log('Coordinates:', coordinatesAPI.data);
         console.log('Contact object with coordinates:', contact);
 
@@ -116,7 +108,6 @@ app.get('/contact/:id', async (req: Request, res: Response) => {
     }
 });
 
-// ... (other routes and unchanged code)
 
 
 const port = process.env.PORT || 8080;
